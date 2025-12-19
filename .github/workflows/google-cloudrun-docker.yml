@@ -38,7 +38,7 @@ env:
   PROJECT_ID: 'my-reflex-app'
   REGION: 'us-central1'
   SERVICE: 'reflex-backend'
-  FRONTEND_DIR: 'frontend'
+  FRONTEND_DIR: 'docs'
   WORKLOAD_IDENTITY_PROVIDER: 'projects/639974523808/locations/global/workloadIdentityPools/github/providers/my-repo' 
 jobs:
   deploy:
