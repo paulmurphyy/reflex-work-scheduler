@@ -1,0 +1,25 @@
+.states
+*.db
+assets/external/
+.web
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+
+# Virtualenv
+.venv/
+
+# Environment files
+.env
+.env.*
+
+# Reflex build output / node artifacts (if any)
+build/
+dist/
+frontend/dist/
+
+# OS
+.DS_Store
+Thumbs.db

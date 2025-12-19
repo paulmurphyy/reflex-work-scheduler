@@ -1,4 +1,0 @@
-gunicorn
-uvicorn
-google-api-python-client  # only required if you plan to use Cloud APIs from backend
-reflex==0.8.23
