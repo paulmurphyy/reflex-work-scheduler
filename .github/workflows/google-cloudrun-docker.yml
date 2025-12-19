@@ -38,6 +38,7 @@ env:
   PROJECT_ID: 'my-reflex-app'
   REGION: 'us-central1'
   SERVICE: 'reflex-backend'
+  FRONTEND_DIR: 'docs'
   WORKLOAD_IDENTITY_PROVIDER: 'projects/639974523808/locations/global/workloadIdentityPools/github/providers/my-repo' 
 jobs:
   deploy:
@@ -92,3 +93,17 @@ jobs:
         run: |2-
 
           echo ${{ steps.deploy.outputs.url }}
+      - name: 'Update frontend with Cloud Run URL'
+        run: |-
+          # Replace placeholder in JS with the actual URL
+          CLOUD_RUN_URL="${{ steps.deploy.outputs.url }}"
+          echo "Updating frontend files with Cloud Run URL: $CLOUD_RUN_URL"
+          sed -i "s|{{CLOUD_RUN_URL}}|$CLOUD_RUN_URL|g" ${{ env.FRONTEND_DIR }}/main.js
+
+      - name: 'Commit & Push to GitHub Pages'
+        run: |-
+          git config user.name "paulmurphyy"
+          git config user.email "luappanda@gmail.com"
+          git add ${{ env.FRONTEND_DIR }}/main.js
+          git commit -m "Update backend URL to $CLOUD_RUN_URL" || echo "No changes to commit"
+          git push origin main
