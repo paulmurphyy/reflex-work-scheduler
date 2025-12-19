@@ -1,16 +1,11 @@
-import base64
-import json
-from googleapiclient import discovery
+# main.py
+import reflex as rx
+from reflex_work_scheduler.reflex_work_scheduler import State
+from reflex_work_scheduler.reflex_work_scheduler import index
 
-def kill_billing(event, context):
-    data = json.loads(
-        base64.b64decode(event["data"]).decode("utf-8")
-    )
+app = rx.App()
+# register states / pages
+app.add_page(index)
 
-    project_id = data["budgetDisplayName"].split("/")[-1]
 
-    billing = discovery.build("cloudbilling", "v1")
-    billing.projects().updateBillingInfo(
-        name=f"projects/{project_id}",
-        body={"billingAccountName": ""}
-    ).execute()
+# Export `app` for Gunicorn: `gunicorn -k uvicorn.workers.UvicornWorker main:app`
