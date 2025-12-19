@@ -33,6 +33,11 @@ on:
   push:
     branches:
       - 'main'
+    paths-ignore:
+      - 'docs/main.js'
+
+permissions:
+  contents: write
 
 env:
   PROJECT_ID: 'my-reflex-app'
