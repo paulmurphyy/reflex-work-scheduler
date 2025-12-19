@@ -77,7 +77,7 @@ jobs:
       - name: 'Build and Push Container'
         run: |-
           DOCKER_TAG="${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.SERVICE }}/${{ env.SERVICE }}:${{ github.sha }}"
-          docker build --tag "${DOCKER_TAG}" .
+          docker build -f Dockerfile --tag "${DOCKER_TAG}" .
           docker push "${DOCKER_TAG}"
           
       - id: 'deploy'
@@ -93,17 +93,22 @@ jobs:
           # NOTE: If using a pre-built image, update the image name below:
 
           image: '${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.SERVICE }}/${{ env.SERVICE }}:${{ github.sha }}'
-      - name: 'Update frontend with Cloud Run URL'
+      - name: 'Build and Run Frontend Container'
         run: |-
-          # Replace placeholder in JS with the actual URL
-          CLOUD_RUN_URL="${{ steps.deploy.outputs.url }}"
-          echo "Updating frontend files with Cloud Run URL: $CLOUD_RUN_URL"
-          sed -i -E "s|const BACKEND_URL = .*;|const BACKEND_URL = \"$CLOUD_RUN_URL\";|" docs/main.js
-
+          DOCKER_TAG="${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.SERVICE }}/${{ env.SERVICE }}:${{ github.sha }}"
+          docker build -f 'web.Dockerfile' --tag 'reflex-frontend' .
+          docker run --rm -e API_URL="${{ steps.deploy.outputs.url }}" -v "$PWD/docs":/app/docs -v "$PWD":/app/workspace -w /app/workspace reflex-frontend /bin/bash -c "mkdir -p docs && cp -r .web/build/client/* docs/"  
+      # - name: 'Write runtime config for frontend'
+      #   run: |-
+      #     CLOUD_RUN_URL="${{ steps.deploy.outputs.url }}"
+      #     if [ -z "$CLOUD_RUN_URL" ]; then
+      #       echo "No Cloud Run URL; aborting"
+      #       exit 1
+      #     echo "window.BACKEND_URL = \"$CLOUD_RUN_URL\";" > docs/config.js
       - name: 'Commit & Push to GitHub Pages'
         run: |-
           git config user.name "paulmurphyy"
           git config user.email "luappanda@gmail.com"
-          git add ${{ env.FRONTEND_DIR }}/main.js
+          git add docs && git diff --cached --quiet ||
           git commit -m "Update backend URL to $CLOUD_RUN_URL" || echo "No changes to commit"
           git push origin main
