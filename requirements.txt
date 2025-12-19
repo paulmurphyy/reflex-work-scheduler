@@ -1,2 +1,2 @@
-fastapi
-uvicorn[standard]
+
+reflex==0.8.23
