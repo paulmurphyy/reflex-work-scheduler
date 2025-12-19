@@ -1,5 +1,5 @@
 // This gets replaced by GitHub Actions
-const BACKEND_URL = "";
+const BACKEND_URL = "https://reflex-backend-jcwpppm3rq-uc.a.run.app";
 
 const btn = document.getElementById("btn");
 const output = document.getElementById("output");
