@@ -1,5 +1,5 @@
 // This gets replaced by GitHub Actions
-const BACKEND_URL = "{{CLOUD_RUN_URL}}";
+const BACKEND_URL = "";
 
 const btn = document.getElementById("btn");
 const output = document.getElementById("output");
