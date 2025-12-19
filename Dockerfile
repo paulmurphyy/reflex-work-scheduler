@@ -8,5 +8,5 @@ RUN pip install -r requirements.txt
 ENV PORT 8080
 EXPOSE 8080
 
-# Use CMD so Cloud Run can override if needed
-CMD ["reflex", "start", "--env", "prod", "--port", "8080", "--loglevel", "debug"]
+# Use reflex start so container runs a web server
+CMD ["sh", "-c", "reflex start --env prod --port $PORT --loglevel debug"]
