@@ -1,12 +1,16 @@
-FROM python:3.12
+FROM python:3.11-slim
 
+# Set working directory
 WORKDIR /app
+
+# Install dependencies
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy app code
 COPY . .
 
-RUN pip install -r requirements.txt
+# Cloud Run requires listening on $PORT
+ENV PORT=8080
 
-ENV PORT 8080
-EXPOSE 8080
-
-# Use reflex start so container runs a web server
-CMD ["sh", "-c", "reflex start --env prod --port $PORT --loglevel debug"]
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8080"]
