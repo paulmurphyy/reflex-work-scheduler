@@ -93,7 +93,7 @@ jobs:
           image: '${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.SERVICE }}/${{ env.SERVICE }}:${{ github.sha }}'
       # If required, use the Cloud Run URL output in later steps
       - name: 'Show output'
-        run: |2-
+        run: |-
 
           echo ${{ steps.deploy.outputs.url }}
       - name: 'Update frontend with Cloud Run URL'
