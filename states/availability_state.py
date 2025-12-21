@@ -22,6 +22,26 @@ class availabilityState(State):
         #Returns a list of str like: ["Monday-9"]
         return [f"{row['day_of_week']}-{row['hour']}" for row in self.my_week]
     
+    @rx.var
+    def hours_list(self) -> list[dict[str, int | str]]:
+        """
+        Transforms military hours into a list of dictionaries with 12-hour labels.
+        >>>
+        {'hour': 13, 'label': '1:00 PM'}
+        """
+        data = []
+        for h in self.hours_blocks:
+            if h == 0:
+                label = "12:00 AM"
+            elif h < 12: 
+                label = f"{h}:00 AM"
+            elif h == 12: 
+                label = "12:00 PM"
+            else:
+                label = f"{h-12}:00 PM"
+            data.append({"hour": h, "label": label})
+        return data
+
     def next_employee(self):
         """
         Moves to the next employee in the database.
@@ -41,6 +61,7 @@ class availabilityState(State):
         """
         Sets the employee's available hours for the given day.
         """
+        print(f"--DB TRIGGERED: {id}, {day}, {hour_block}")
         emp_id = int(id)
         h_block = int(hour_block)
 
@@ -55,10 +76,15 @@ class availabilityState(State):
                 #If shift exists for this employee, delete it.
                 session.delete(existing)
             else:
-                session.add(Availability(
-                    employee_id=id, day_of_week=day, hour=hour_block
-                ))
+                session.add(
+                    Availability(
+                        employee_id=emp_id, day_of_week=day, hour=h_block
+                    )
+                )
+            #Commit changes.
             session.commit()
+
+        #Refresh so the checkbox lights up.
         self.get_employee_week(id)
 
     def load_employee_name(self, id: int):
