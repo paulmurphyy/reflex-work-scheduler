@@ -1,5 +1,6 @@
 import reflex as rx
 
+
 class Employee(rx.Model, table=True):
     name: str
     employee_id: int #Maybe be unneccessary depending on the primary key of the database.

@@ -16,11 +16,23 @@ class employeeState(State):
         #Only capture numbers or spaces. Letters will be omitted. Note: You will see the letters in the box, but they won't be recorded.
         if id.isdigit() or id == "":
             self.new_employee_id = id
-     
+
     def get_employees(self):
         with rx.session() as session:
             #Fetch all employees from the database.
             self.employees = session.exec(Employee.select()).all() #type: ignore
+
+    def delete_employee(self, emp_id: int):
+        with rx.session() as session:
+            employee = session.exec(
+                Employee.select().where(Employee.id == emp_id)
+            ).first()
+            if employee:
+                session.delete(employee)
+                session.commit()
+
+        #Refresh employee list after deletion.
+        self.get_employees()
 
     def add_employee(self):
 

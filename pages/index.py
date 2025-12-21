@@ -32,6 +32,8 @@ def index() -> rx.Component:
                 on_click=employeeState.add_employee,
                 width="100%",
             ),
+
+
             align_items="start",
         ),
 
@@ -42,17 +44,26 @@ def index() -> rx.Component:
             #Table area
             rx.vstack(
                 rx.foreach(
+
+                #Employee Table
                 employeeState.employees,
                 lambda emp: rx.hstack(
                     rx.badge(f"ID: {emp.employee_id}", variant="outline", color_scheme="red"),
                     rx.text(emp.name),
+
+                    #Delete button.
+                    rx.button(
+                    rx.icon("trash-2"),
+                    on_click=lambda: employeeState.delete_employee(emp.id),
+                    color_scheme="red",
+                    variant="ghost",
+                ),
+
                     justify="between",
                     align_items="center",
                     padding_y="2",
                     border_bottom="1px solid #eaeaea",
-
                 ),
-            
                 ),
             spacing="5",
             width="100%",
