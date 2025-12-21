@@ -48,7 +48,7 @@ def index() -> rx.Component:
                 #Employee Table
                 employeeState.employees,
                 lambda emp: rx.hstack(
-                    rx.badge(f"ID: {emp.employee_id}", variant="outline", color_scheme="red"),
+                    rx.badge(f"ID: {emp.id}", variant="outline", color_scheme="red"),
                     rx.text(emp.name),
 
                     #Delete button.

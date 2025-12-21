@@ -18,7 +18,7 @@ class availabilityState(State):
 
 
     @rx.var
-    def active_slots(self) -> list[list[str]]:
+    def active_slots(self) -> list[str]:
         #Returns a list of str like: ["Monday-9"]
         return [f"{row.day_of_week}-{row.hour}" for row in self.my_week]
     
@@ -33,7 +33,7 @@ class availabilityState(State):
         """
         Moves to the previous employee in the database.
         """
-        if self.selected_employee_id >1:
+        if self.selected_employee_id > 1:
             self.selected_employee_id -= 1
             self.load_employee_name(self.selected_employee_id)
 
@@ -45,26 +45,20 @@ class availabilityState(State):
         h_block = int(hour_block)
 
         with rx.session() as session:
-
-            existing = session.exec(
-                Availability.select().where(
-                    (Availability.employee_id == emp_id) &
-                    (Availability.day_of_week == day) &
-                    (Availability.hour == h_block)
-                )
-            ).first()
+            existing = session.scalars(Availability.select().where(
+                (Availability.employee_id == emp_id) &
+                (Availability.day_of_week == day) &
+                (Availability.hour == h_block)
+            )).first()
 
             if existing:
                 #If shift exists for this employee, delete it.
                 session.delete(existing)
-
             else:
-                session.add(
-                    Availability(
-                        employee_id=id, day_of_week=day, hour=hour_block
-                    )
-                )
-        session.commit()
+                session.add(Availability(
+                    employee_id=id, day_of_week=day, hour=hour_block
+                ))
+            session.commit()
         self.get_employee_week(id)
 
     def load_employee_name(self, id):
@@ -77,21 +71,20 @@ class availabilityState(State):
             employee = session.get(Employee, id)
             if employee:
                 self.selected_employee_name = employee.name
-
-            #Refresh the grid.
-            self.get_employee_week(id)
+            session.commit()
+        #Refresh the grid.
+        self.get_employee_week(id)
 
     def get_employee_day(self, id, day):
         """
         Returns employee's availability for shift(s) for the given day.
         """
         with rx.session() as session:
-            results = session.exec(
-                Availability.select().where(
-                    (Availability.employee_id == id) &
-                    (Availability.day_of_week == day)
-                )
-            ).all()
+            results = session.scalars(Availability.select().where(
+                (Availability.employee_id == id) &
+                (Availability.day_of_week == day)
+            )).all()
+            session.commit()
         self.my_shifts = results
 
     def get_employee_week(self, id):
@@ -99,11 +92,10 @@ class availabilityState(State):
         Returns employee's availability for the entire week.
         """
         with rx.session() as session:
-            results = session.exec(
-                Availability.select().where(
-                    (Availability.employee_id == id)
-                )
-            ).all()
+            results = session.scalars(Availability.select().where(
+                (Availability.employee_id == id)
+            )).all()
+            session.commit()
         self.my_week = results
 
     def get_day_hour_status(self, day, hour):
@@ -111,23 +103,21 @@ class availabilityState(State):
         Returns everyone who is available for shifts on the given day and hour.
         """
         with rx.session() as session:
-            results = session.exec(
-                Availability.select().where(
+            results = session.scalars(Availability.select().where(
                 (Availability.day_of_week == day) &
                 (Availability.hour == hour)
-                )
-            ).all()
-            self.working_now = results
+            )).all()
+            session.commit()
+        self.working_now = results
             
     def get_day_status(self, day):
         """
         Returns everyone who is available on the given day.
         """
         with rx.session() as session:
-            results = session.exec(
-                Availability.select().where(
-                    (Availability.day_of_week == day)
-                )
-            ).all()
+            results = session.scalars(Availability.select().where(
+                Availability.day_of_week == day
+            )).all()
+            session.commit()
         self.working_now = results
 
