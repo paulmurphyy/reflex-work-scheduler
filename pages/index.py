@@ -17,14 +17,6 @@ def index() -> rx.Component:
                 width="100%",
             ),
 
-            #ID Box
-            rx.input(
-                value=employeeState.new_employee_id,
-                placeholder="Enter ID number",
-                on_change=employeeState.change_id,
-                width="100%",
-            ),
-
             #Add Employee Button
             rx.button(
                 "Add Employee",
@@ -40,7 +32,6 @@ def index() -> rx.Component:
             #Divider between buttons and table.
             rx.divider(),
             rx.heading("Current Staff:", size="5", padding_y="1em"),
-
             #Table area
             rx.vstack(
                 rx.foreach(
@@ -48,8 +39,8 @@ def index() -> rx.Component:
                 #Employee Table
                 employeeState.employees,
                 lambda emp: rx.hstack(
-                    rx.badge(f"ID: {emp.id}", variant="outline", color_scheme="red"),
-                    rx.text(emp.name),
+                    rx.badge(f"ID: {emp['id']}", variant="outline", color_scheme="red"),
+                    rx.text(emp['name']),
 
                     #Delete button.
                     rx.button(

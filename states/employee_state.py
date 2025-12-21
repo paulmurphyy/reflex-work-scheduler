@@ -1,13 +1,12 @@
 import reflex as rx
-from typing import Sequence
+from typing import Dict, Any, List
 from models import Employee
-from .base_state import State
 
-class employeeState(State):
+class employeeState(rx.State):
 
     new_employee_name: str = ""
     new_employee_id: str = ""
-    employees: Sequence[Employee] = []
+    employees: List[Dict[str, Any]]
 
     def change_name(self, name: str):
         self.new_employee_name = name
@@ -16,12 +15,15 @@ class employeeState(State):
         if id.isdigit() or id == "":
             self.new_employee_id = id
 
-    def _get_employees(self):
-        with rx.session() as session:
-            self.employees = session.scalars(Employee.select()).all()
-
     def get_employees(self):
-        self._get_employees()
+        with rx.session() as session:
+            self.employees = [
+                {
+                    "id": emp.id,
+                    "name": emp.name,
+                }
+                for emp in session.scalars(Employee.select()).all()
+            ]
 
     def delete_employee(self, emp_id: int):
         with rx.session() as session:
@@ -32,26 +34,21 @@ class employeeState(State):
                 session.delete(employee)
             session.commit()
 
-        self._get_employees()
+        self.get_employees()
         return rx.toast.success("Employee deleted")
 
     def add_employee(self):
-        if self.new_employee_id == "" or self.new_employee_name == "":
-            return rx.toast.error("Both Name and ID are required!")
-
-        if not self.new_employee_id.isdigit():
-            return rx.toast.error("ID must be a number!")
+        if self.new_employee_name == "":
+            return rx.toast.error("Name is required!")
 
         with rx.session() as session:
             session.add(Employee(
-                name=self.new_employee_name,
-                id=int(self.new_employee_id)
+                name = self.new_employee_name
             ))
             session.commit()
 
         employee_name: str = self.new_employee_name
         self.new_employee_name = ""
-        self.new_employee_id = ""
 
-        self._get_employees()
+        self.get_employees()
         return rx.toast.success(f"Added {employee_name}!")
