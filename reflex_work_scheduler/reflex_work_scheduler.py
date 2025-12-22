@@ -21,4 +21,4 @@ app = rx.App(
     )
 )
 app.add_page(index, on_load=employeeState.get_employees)
-app.add_page(availability, route="/availability", on_load=lambda: availabilityState.load_employee_name(availabilityState.selected_employee_id))
+app.add_page(availability, route="/availability", on_load=availabilityState.load_employee_name)

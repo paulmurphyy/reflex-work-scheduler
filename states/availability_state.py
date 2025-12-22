@@ -47,7 +47,7 @@ class availabilityState(State):
         Moves to the next employee in the database.
         """
         self.selected_employee_id += 1
-        self.load_employee_name(self.selected_employee_id)
+        self.load_employee_name()
 
     def prev_employee(self):
         """
@@ -55,7 +55,7 @@ class availabilityState(State):
         """
         if self.selected_employee_id > 1:
             self.selected_employee_id -= 1
-            self.load_employee_name(self.selected_employee_id)
+            self.load_employee_name()
 
     def set_employee_availability(self, id, day, hour_block):
         """
@@ -87,19 +87,18 @@ class availabilityState(State):
         #Refresh so the checkbox lights up.
         self.get_employee_week(id)
 
-    def load_employee_name(self, id: int):
+    def load_employee_name(self):
         """
         Pulls the employee's name via the employee id.
         """
-        self.selected_employee_id = id
         with rx.session() as session:
             #Get the name.
-            employee = session.get(Employee, id)
+            employee = session.get(Employee, self.selected_employee_id)
             if employee:
                 self.selected_employee_name = employee.name
             session.commit()
         #Refresh the grid.
-        self.get_employee_week(id)
+        self.get_employee_week(self.selected_employee_id)
 
     def get_employee_day(self, id, day):
         """
