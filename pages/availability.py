@@ -1,6 +1,27 @@
 import reflex as rx
 from states import availabilityState
 
+
+def h_label(h):
+    """
+    Transforms military hours into a list of dictionaries with 12-hour labels.
+    >>>
+    {'hour': 13, 'label': '1:00 PM'}
+    """
+    return rx.cond(
+        h == 0,
+        "12:00 AM",
+        rx.cond(
+            h < 12,
+            rx.text(f"{h}:00 AM"),
+            rx.cond(
+                h == 12,
+                "12:00 PM",
+                f"{h - 12}:00 PM",
+            ),
+        ),
+    )
+
 def availability() -> rx.Component:
     return rx.container(
         # Title
@@ -10,9 +31,9 @@ def availability() -> rx.Component:
 
         # Employee Name Subheader with Navigation
         rx.hstack(
-            rx.button("<", on_click=availabilityState.prev_employee),
-            rx.text(availabilityState.selected_employee_name, size="5", width="100%", text_align="center"),
-            rx.button(">", on_click=availabilityState.next_employee),
+            rx.button("<", on_click= lambda: availabilityState.prev_employee),
+            rx.text(availabilityState.cur_name, size="5", width="100%", text_align="center"),
+            rx.button(">", on_click= lambda: availabilityState.next_employee),
             justify="center",
             spacing="4",
             padding="1em",
@@ -23,34 +44,35 @@ def availability() -> rx.Component:
             # Header Row
             rx.text("Time", font_weight="bold"),
             rx.foreach(availabilityState.days, lambda day: rx.text(day[:3], font_weight="bold")),
-
-            # Body Rows
             rx.foreach(
-                availabilityState.hours_list, 
-                lambda h_data: rx.fragment(
-                    # Display the 12-hour label (e.g., "1:00 PM")
-                    rx.text(h_data["label"], white_space="nowrap"),
+                availabilityState.h_blocks,
+                lambda hour: rx.fragment(
+                    rx.text(h_label(hour), white_space="nowrap"),
                     rx.foreach(
                         availabilityState.days,
                         lambda day: rx.center(
-                            rx.checkbox(
-                                # Use h_data["hour"] (the integer) for logic and state tracking
-                                is_checked=availabilityState.active_slots.contains(
-                                    day + "-" + h_data["hour"].to_string()
+                            rx.cond(
+                                availabilityState.cur_aval.contains(day) & availabilityState.cur_aval[day].contains(hour),
+                                rx.checkbox(
+                                    checked=True, 
+                                    on_change=lambda *_: availabilityState.rem_aval(
+                                        availabilityState.cur_id,
+                                        day,
+                                        hour,
+                                    ),
                                 ),
-                                # When clicked, it triggers the database logic with the correct integer hour
-                                on_change=lambda _: availabilityState.set_employee_availability(
-                                    availabilityState.selected_employee_id, 
-                                    day, 
-                                    h_data["hour"]
+                                rx.checkbox(
+                                    checked=False, 
+                                    on_change=lambda *_: availabilityState.add_aval(
+                                        availabilityState.cur_id,
+                                        day,
+                                        hour,
+                                    ),
                                 ),
-                                color_scheme="green",
-                                size="3",
                             ),
-                            width="25px",
-                        )
-                    )
-                )
+                        ),
+                    ),
+                ),
             ),
             columns="8",
             spacing="4",

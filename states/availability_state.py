@@ -1,172 +1,111 @@
 import reflex as rx
 from .base_state import State
 from models import Availability, Employee
-from typing import List, Dict, Any
+from typing import List, Dict, Any, TypedDict
 
 
 class availabilityState(State):
     """
     Controls availability across all employees.
     """
-    selected_employee_id: int = 1
-    selected_employee_name: str = "Select an Employee"
+    cur_id: int = 1
+    cur_name: str = ''
+    cur_aval: Dict[str, List[int]] = {}
     days: list[str] = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
-    hours_blocks: list[int] = [9, 10, 11, 12, 13, 14, 15, 16]
-    working_now: List[Dict[str, Any]] = []
-    my_shifts: List[Dict[str, Any]] = []
-    my_week: List[Dict[str, Any]] = []
-
-
-    @rx.var
-    def active_slots(self) -> list[str]:
-        #Returns a list of str like: ["Monday-9"]
-        return [f"{row['day_of_week']}-{row['hour']}" for row in self.my_week]
-    
-    @rx.var
-    def hours_list(self) -> list[dict[str, int | str]]:
-        """
-        Transforms military hours into a list of dictionaries with 12-hour labels.
-        >>>
-        {'hour': 13, 'label': '1:00 PM'}
-        """
-        data = []
-        for h in self.hours_blocks:
-            if h == 0:
-                label = "12:00 AM"
-            elif h < 12: 
-                label = f"{h}:00 AM"
-            elif h == 12: 
-                label = "12:00 PM"
-            else:
-                label = f"{h-12}:00 PM"
-            data.append({"hour": h, "label": label})
-        return data
+    h_blocks: list[int] = [9, 10, 11, 12, 13, 14, 15, 16]
 
     def next_employee(self):
         """
         Moves to the next employee in the database.
         """
-        self.selected_employee_id += 1
+        self.cur_id += 1
         self.load_employee_name()
 
     def prev_employee(self):
         """
         Moves to the previous employee in the database.
         """
-        if self.selected_employee_id > 1:
-            self.selected_employee_id -= 1
+        if self.cur_id > 1:
+            self.cur_id -= 1
             self.load_employee_name()
 
-    def set_employee_availability(self, id, day, hour_block):
+    def add_aval(self, id, day, h_block):
         """
         Sets the employee's available hours for the given day.
         """
-        print(f"--DB TRIGGERED: {id}, {day}, {hour_block}")
-        emp_id = int(id)
-        h_block = int(hour_block)
+        print(f"--DB TRIGGERED: {id}, {day}, {h_block}")
+        # id = int(id)
+        h_block = int(h_block)
 
         with rx.session() as session:
-            existing = session.scalars(Availability.select().where(
-                (Availability.employee_id == emp_id) &
-                (Availability.day_of_week == day) &
-                (Availability.hour == h_block)
-            )).first()
+            existing = session.scalars(Availability.select().where(Availability.employee_id == id)).first()
 
-            if existing:
-                #If shift exists for this employee, delete it.
-                session.delete(existing)
-            else:
+            if not existing:
                 session.add(
                     Availability(
-                        employee_id=emp_id, day_of_week=day, hour=h_block
+                        employee_id=id, availability={day: [h_block]}
                     )
                 )
-            #Commit changes.
+            else:
+                result = dict(existing.availability)
+                hours = set(result.get(day, []))
+                hours.add(h_block)
+                result[day] = list(hours)
+                existing.availability = result
+
             session.commit()
 
-        #Refresh so the checkbox lights up.
         self.get_employee_week(id)
 
+    def rem_aval(self, id, day, h_block):
+        """
+        Sets the employee's available hours for the given day.
+        """
+        print(f"--DB TRIGGERED: {id}, {day}, {h_block}")
+        # id = int(id)
+        h_block = int(h_block)
+
+        with rx.session() as session:
+            existing = session.scalars(Availability.select().where(Availability.employee_id == id)).first()
+
+            if existing:
+                result = dict(existing.availability)
+                hours = set(result.get(day, []))
+                hours.remove(h_block)
+                result[day] = list(hours)
+                existing.availability = result
+            else: print('error')
+
+            session.commit()
+
+        self.get_employee_week(id)
+    
     def load_employee_name(self):
         """
         Pulls the employee's name via the employee id.
         """
         with rx.session() as session:
             #Get the name.
-            employee = session.get(Employee, self.selected_employee_id)
+            employee = session.get(Employee, self.cur_id)
             if employee:
-                self.selected_employee_name = employee.name
+                self.cur_name = employee.name
             session.commit()
         #Refresh the grid.
-        self.get_employee_week(self.selected_employee_id)
-
-    def get_employee_day(self, id, day):
-        """
-        Returns employee's availability for shift(s) for the given day.
-        """
-        with rx.session() as session:
-            results = [
-                {
-                    'employee_id': emp.employee_id,
-                    'day_of_week': emp.day_of_week,
-                    'hour': emp.hour
-                }
-                for emp in session.scalars(Availability.select().where((
-                    Availability.employee_id == id) & 
-                    (Availability.day_of_week == day)
-                )).all()
-            ]
-            session.commit()
-        self.my_shifts = results
+        self.get_employee_week(self.cur_id)
 
     def get_employee_week(self, id):
-        """
-        Returns employee's availability for the entire week.
-        """
         with rx.session() as session:
-            results = [
-                {
-                    'employee_id': emp.employee_id,
-                    'day_of_week': emp.day_of_week,
-                    'hour': emp.hour
-                }
-                for emp in session.scalars(Availability.select().where(Availability.employee_id == id)).all()
-            ]
+            emp = session.scalars(
+                Availability.select().where(Availability.employee_id == id)
+            ).first()
+           
+            if emp and emp.availability:
+                self.cur_aval = emp.availability
+            else:
+                self.cur_aval = {}
+            # Query your models
+            employees = session.scalars(Availability.select()).all()
+            for employee in employees:
+                print(employee.employee_id, employee.availability)
+            print(self.cur_aval)
             session.commit()
-        self.my_week = results
-
-    def get_day_hour_status(self, day, hour):
-        """
-        Returns everyone who is available for shifts on the given day and hour.
-        """
-        with rx.session() as session:
-            results = [
-                {
-                    'employee_id': emp.employee_id,
-                    'day_of_week': emp.day_of_week,
-                    'hour': emp.hour
-                }
-                for emp in session.scalars(Availability.select().where(
-                    (Availability.day_of_week == day) &
-                    (Availability.hour == hour)
-                )).all()
-            ]
-            session.commit()
-        self.working_now = results
-            
-    def get_day_status(self, day):
-        """
-        Returns everyone who is available on the given day.
-        """
-        with rx.session() as session:
-            results = [
-                {
-                    'employee_id': emp.employee_id,
-                    'day_of_week': emp.day_of_week,
-                    'hour': emp.hour
-                }
-                for emp in session.scalars(Availability.select().where(Availability.day_of_week == day)).all()
-            ]
-            session.commit()
-        self.working_now = results
-
