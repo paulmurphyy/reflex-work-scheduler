@@ -31,9 +31,21 @@ def availability() -> rx.Component:
 
         # Employee Name Subheader with Navigation
         rx.hstack(
-            rx.button("<", on_click= lambda: availabilityState.prev_employee),
+            rx.button("<", 
+                      on_click=availabilityState.prev_employee,
+                      #"Previous" arrow is disabled if the current index is 0.
+                      is_disabled=availabilityState.is_at_start,
+                      opacity=rx.cond(availabilityState.is_at_start, 0.3, 1.0),
+                      cursor=rx.cond(availabilityState.is_at_start, "not-allowed", "pointer"),
+                      ),
             rx.text(availabilityState.cur_name, size="5", width="100%", text_align="center"),
-            rx.button(">", on_click= lambda: availabilityState.next_employee),
+            rx.button(">", 
+                      on_click=availabilityState.next_employee,
+                      #"Next" arrow is disabled if end of list is reached.
+                      is_disabled=availabilityState.is_at_end,
+                      opacity=rx.cond(availabilityState.is_at_end, 0.3, 1.0),
+                      cursor=rx.cond(availabilityState.is_at_end, "not-allowed", "pointer"),
+                      ),
             justify="center",
             # spacing="4",
             padding="1em",
