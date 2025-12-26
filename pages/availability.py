@@ -26,7 +26,7 @@ def availability() -> rx.Component:
     return rx.container(
         # Title
         rx.vstack(
-            rx.text("Add Availability", size="9", padding="2em", width="100%", text_align="center"),
+            rx.text("Add Availability", size="9", width="100%", text_align="center"),
         ),
 
         # Employee Name Subheader with Navigation
@@ -35,7 +35,7 @@ def availability() -> rx.Component:
             rx.text(availabilityState.cur_name, size="5", width="100%", text_align="center"),
             rx.button(">", on_click= lambda: availabilityState.next_employee),
             justify="center",
-            spacing="4",
+            # spacing="4",
             padding="1em",
         ),
 
