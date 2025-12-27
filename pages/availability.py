@@ -27,6 +27,8 @@ def availability() -> rx.Component:
         # Title
         rx.flex(
             rx.link(rx.button('< Employees'), href='../', style={'margin-right': 'auto'}),
+            rx.spacer(),
+            rx.link(rx.button('Calendar >'), href="/calendar")
         ),
         rx.vstack(
             rx.text("Add Availability", size="9", width="100%", text_align="center"),
