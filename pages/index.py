@@ -24,7 +24,7 @@ def index() -> rx.Component:
             rx.button(
                 "Add Employee",
                 color_scheme="blue",
-                on_click=employeeState.add_employee,
+                on_click= employeeState.add_employee,
                 width="100%",
             ),
 
@@ -34,7 +34,15 @@ def index() -> rx.Component:
 
             #Divider between buttons and table.
             rx.divider(),
-            rx.heading("Current Staff:", size="5", padding_y="1em"),
+            rx.flex(
+                rx.heading("Current Staff:", size="5"),
+                rx.spacer(),
+                rx.button(
+                    "Clear all", 
+                    on_click = employeeState.clear_employees, 
+                ),
+                padding_y='1em',
+            ),
             #Table area
             rx.vstack(
                 rx.foreach(

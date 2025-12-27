@@ -102,8 +102,11 @@ class availabilityState(State):
             self.all_employees = session.scalars(Employee.select()).all()
             if self.all_employees:
                 self.cur_index = 0
-                self.load_employee_name()     
-    
+                self.load_employee_name() 
+            else:
+                self.cur_name = 'No Employees Found'
+                self.cur_aval = {}    
+        
     def load_employee_name(self):
         """
         Pulls the employee's name via the current list index.

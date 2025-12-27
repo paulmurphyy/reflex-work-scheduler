@@ -2,21 +2,38 @@ import reflex as rx
 from states import calendarState
 from .availability import h_label
 
+def h_label(h):
+    """
+    Transforms military hours into a list of dictionaries with 12-hour labels.
+    >>>
+    {'hour': 13, 'label': '1:00 PM'}
+    """
+    return rx.cond(
+        h == 0,
+        "12:00 AM",
+        rx.cond(
+            h < 12,
+            rx.text(f"{h}:00 AM"),
+            rx.cond(
+                h == 12,
+                "12:00 PM",
+                f"{h - 12}:00 PM",
+            ),
+        ),
+    )
 
 def calendar() -> rx.Component:
     return rx.container(
 
         #Nav:
-         rx.flex(
+        rx.flex(
             rx.link(rx.button('< Availability'), href='/availability', variant="soft"),
-            rx.spacer(),
-            rx.link(rx.button('Employees >'), href='/', variant="soft"),
             width="100%",
             margin_bottom="1em",
         ),
 
         #Title
-        rx.text("Shift Calendar", size="9", font_weight="bold", margin_bottom="1em"),
+        rx.heading("Shift Calendar", size="9"),
 
         #Grid layout for calendar: 
         rx.grid(
@@ -31,15 +48,15 @@ def calendar() -> rx.Component:
 
             rx.foreach(
                 calendarState.hours, 
-                lambda hour: rx.fragment(
+                lambda h: rx.fragment(
                     # Column 1: The Hour Label
-                    rx.text(f"{hour}:00", white_space="nowrap", padding_top="0.5em"),
+                    rx.text(h_label(h), white_space="nowrap", padding_top="0.5em"),
 
                     # Columns 2-8: The heatmap cells for that hour
                     rx.foreach(
                         calendarState.days,
                         lambda day: rx.center(
-                            rx.text(calendarState.heatmap[day][hour].to_string()),
+                            rx.text(calendarState.heatmap[day][h].to_string()),
                             bg="green",
 
                             #Styling for each of the cells:
@@ -50,8 +67,8 @@ def calendar() -> rx.Component:
 
                             #Opacity adjusts with the number of employees working: (cur_count/max_count). Darker color means more people are working.
                             opacity=rx.cond(
-                                calendarState.heatmap[day][hour] > 0,
-                                calendarState.heatmap[day][hour] / calendarState.max_emp_count,
+                                calendarState.heatmap[day][h] > 0,
+                                calendarState.heatmap[day][h] / calendarState.max_emp_count,
                                 #If no-one is working on the day, the cell is transparent:
                                 0.05,
                             ),
@@ -63,6 +80,7 @@ def calendar() -> rx.Component:
             columns="8", 
             spacing="2",
             width="100%",
+            padding_top='1em',
         ),
         padding="2em",
     )
