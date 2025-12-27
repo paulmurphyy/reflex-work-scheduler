@@ -25,6 +25,9 @@ def h_label(h):
 def availability() -> rx.Component:
     return rx.container(
         # Title
+        rx.flex(
+            rx.link(rx.button('< Employees'), href='../', style={'margin-right': 'auto'}),
+        ),
         rx.vstack(
             rx.text("Add Availability", size="9", width="100%", text_align="center"),
         ),

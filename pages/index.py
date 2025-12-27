@@ -4,6 +4,9 @@ from states.employee_state import employeeState
 def index() -> rx.Component:
     return rx.container(
         rx.toast.provider(),
+        rx.flex(
+            rx.link(rx.button('Availability >'), href='availability', style={'margin-left': 'auto'}),
+        ),
         rx.vstack(
             
             #Header
