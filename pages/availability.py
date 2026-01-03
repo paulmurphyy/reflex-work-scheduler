@@ -30,7 +30,7 @@ def availability() -> rx.Component:
             rx.spacer(),
             rx.link(rx.button('Calendar >'), href="/calendar")
         ),
-        rx.heading("Add Availability", size="9", width="100%", text_align="center"),
+        rx.heading("Add Availability", size="9", width="100%"),
         
 
         # Employee Name Subheader with Navigation
