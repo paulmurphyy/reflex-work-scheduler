@@ -10,7 +10,7 @@ def index() -> rx.Component:
         rx.vstack(
             
             #Header
-            rx.heading("Add New Employee", size="9", width="100%", text_align="center"),
+            rx.heading("Add New Employee", size="9", width="100%"),
 
             #Name Box
             rx.input(
