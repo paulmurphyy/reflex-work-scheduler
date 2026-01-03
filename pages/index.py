@@ -6,6 +6,7 @@ def index() -> rx.Component:
         rx.toast.provider(),
         rx.flex(
             rx.link(rx.button('Availability >'), href='availability', style={'margin-left': 'auto'}),
+	    margin_bottom='1em',
         ),
         rx.vstack(
             

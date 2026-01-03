@@ -28,7 +28,8 @@ def availability() -> rx.Component:
         rx.flex(
             rx.link(rx.button('< Employees'), href='../', style={'margin-right': 'auto'}),
             rx.spacer(),
-            rx.link(rx.button('Calendar >'), href="/calendar")
+            rx.link(rx.button('Calendar >'), href="/calendar"),
+	    margin_bottom = '1em',
         ),
         rx.heading("Add Availability", size="9", width="100%"),
         

@@ -5,5 +5,8 @@ config = rx.Config(
     plugins=[
         rx.plugins.SitemapPlugin(),
         rx.plugins.TailwindV4Plugin(),
-    ]
+    ],
+    show_built_with_reflex = False
+#    deploy_url='http://schedulemyshift.com',
+#    api_url='http://18.221.203.137:8000'
 )
